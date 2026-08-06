@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%230A0A0D'/%3E%3Crect x='40' y='40' width='40' height='40' rx='6' fill='%2379B8E8'/%3E%3Crect x='100' y='40' width='40' height='40' rx='6' fill='%233452A8'/%3E%3Crect x='40' y='100' width='40' height='40' rx='6' fill='%23E39440'/%3E%3Crect x='100' y='100' width='40' height='40' rx='6' fill='%23CF574C'/%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0A0D">
+<title>Días</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFEEE8;
+    --ink:#12172B;
+    --ink-soft:#6B7188;
+    --line:#DBDAD2;
+    --card:#F7F6F1;
+    --n0:#DADEE8;
+    --n1:#C1483F;
+    --n2:#D9812F;
+    --n3:#1F3C88;
+    --n4:#79B8E8;
+    --danger:#B3453B;
+    --good:#3D7A5C;
+    --cell-border:rgba(0,0,0,.05);
+    --num-lo:rgba(0,0,0,.4);
+    --num-hi:rgba(255,255,255,.8);
+    --overlay:rgba(18,23,43,.42);
+    --sheet-shadow:rgba(0,0,0,.15);
+    --item-bg:rgba(18,23,43,.045);
+  }
+  html[data-theme="dark"]{
+    --bg:#0A0A0D;
+    --ink:#F2F1ED;
+    --ink-soft:#8A8DA0;
+    --line:#242530;
+    --card:#151519;
+    --n0:#1C1D26;
+    --n1:#CF574C;
+    --n2:#E39440;
+    --n3:#3452A8;
+    --n4:#8FCBF2;
+    --danger:#E2695F;
+    --good:#5FBF8F;
+    --cell-border:rgba(255,255,255,.05);
+    --num-lo:rgba(255,255,255,.4);
+    --num-hi:rgba(255,255,255,.85);
+    --overlay:rgba(0,0,0,.6);
+    --sheet-shadow:rgba(0,0,0,.5);
+    --item-bg:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased;}
+  html{ transition:background .2s ease; }
+  body{padding-bottom:calc(48px + env(safe-area-inset-bottom));}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{
+    padding:calc(18px + env(safe-area-inset-top)) 20px 16px;
+    position:sticky; top:0; z-index:5;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    max-width:520px; margin:0 auto; box-sizing:border-box;
+  }
+  .yearrow{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .yearrow .left{ display:flex; align-items:center; gap:12px; }
+  .right-actions{ display:flex; align-items:center; gap:8px; }
+  .yearrow .ybtn{
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--line); background:var(--card);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; color:var(--ink); cursor:pointer;
+  }
+  .yearrow .ybtn:active{background:var(--n0);}
+  .yearrow .ylabel{
+    font-size:15px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .theme-toggle{
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid var(--line); background:var(--card);
+    display:flex; align-items:center; justify-content:center;
+    font-size:17px; cursor:pointer;
+  }
+  .theme-toggle:active{ background:var(--n0); }
+  .dow-row{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:5px;
+  }
+  .dow-row span{
+    text-align:center; font-size:11px; letter-spacing:.04em;
+    text-transform:uppercase; color:var(--ink-soft); font-weight:500;
+  }
+
+  main{ padding:20px 20px 0; max-width:520px; margin:0 auto; }
+  .month{ margin-bottom:28px; }
+  .month h2{
+    font-size:13.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600; margin:0 0 11px 2px;
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;
+  }
+  .month-avg{
+    display:flex; align-items:center; justify-content:flex-end; gap:8px;
+    margin:12px 2px 0;
+  }
+  .month-avg-label{
+    font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .month-avg-badge{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:13px;
+    padding:3px 11px; border-radius:7px; background:var(--n0); color:var(--ink-soft);
+  }
+  .month-avg-badge.r1{ background:var(--n1); color:#fff; }
+  .month-avg-badge.r2{ background:var(--n2); color:#fff; }
+  .month-avg-badge.r3{ background:var(--n3); color:#fff; }
+  .month-avg-badge.r4{ background:var(--n4); color:var(--ink); }
+  .cell{
+    aspect-ratio:1; border-radius:6px; position:relative;
+    background:var(--n0); border:1px solid var(--cell-border);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .cell.empty{ visibility:hidden; }
+  .cell.future{ background:transparent; border:1px dashed var(--line); cursor:default; }
+  .cell .num{
+    position:absolute; top:3px; left:4px;
+    font-size:9px; color:var(--num-lo); font-weight:500; opacity:.7;
+  }
+  .cell .grade-display{
+    font-size:12.5px; font-weight:700; letter-spacing:-0.02em;
+    font-family:'IBM Plex Mono',monospace; color:var(--ink);
+  }
+  .cell.r1{ background:var(--n1); }
+  .cell.r2{ background:var(--n2); }
+  .cell.r3{ background:var(--n3); }
+  .cell.r4{ background:var(--n4); }
+  .cell.r1 .num, .cell.r1 .grade-display,
+  .cell.r2 .num, .cell.r2 .grade-display,
+  .cell.r3 .num, .cell.r3 .grade-display{ color:#fff; }
+  .cell.r1 .num, .cell.r2 .num, .cell.r3 .num{ opacity:.75; }
+  .cell.r4 .num, .cell.r4 .grade-display{ color:var(--ink); }
+  .cell.today{ box-shadow:0 0 0 2px var(--ink); }
+  .cell.future .num{ opacity:.4; }
+
+  .day-screen{
+    position:fixed; inset:0; background:var(--bg); z-index:20;
+    display:flex; flex-direction:column;
+    transform:translateY(100%); transition:transform .25s ease;
+  }
+  .day-screen.open{ transform:translateY(0); }
+  .day-screen-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:calc(14px + env(safe-area-inset-top)) 20px 14px; border-bottom:1px solid var(--line);
+    flex:0 0 auto; max-width:520px; width:100%; margin:0 auto; box-sizing:border-box;
+  }
+  .back-btn{
+    border:none; background:none; color:var(--ink); font-size:15px;
+    font-weight:600; cursor:pointer; padding:6px 4px 6px 0;
+    display:flex; align-items:center; gap:4px;
+  }
+  .header-delete{
+    border:none; background:none; color:var(--danger); font-size:14px;
+    font-weight:600; cursor:pointer; padding:6px 4px;
+  }
+  .recap-title{
+    font-size:13px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600;
+  }
+  .recap-year-avg{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:28px; padding-bottom:16px; border-bottom:1px solid var(--line);
+  }
+  .recap-year-avg-label{ font-size:14px; font-weight:600; color:var(--ink); }
+  .recap-year-avg-badge{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:20px;
+    padding:6px 16px; border-radius:9px; background:var(--n0); color:var(--ink-soft);
+  }
+  .recap-year-avg-badge.r1{ background:var(--n1); color:#fff; }
+  .recap-year-avg-badge.r2{ background:var(--n2); color:#fff; }
+  .recap-year-avg-badge.r3{ background:var(--n3); color:#fff; }
+  .recap-year-avg-badge.r4{ background:var(--n4); color:var(--ink); }
+  .recap-chart{
+    display:flex; align-items:flex-end; gap:6px;
+    height:220px; padding-bottom:4px;
+  }
+  .recap-bar-wrap{
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    justify-content:flex-end; height:100%; gap:6px;
+  }
+  .recap-bar-value{
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:700;
+    color:var(--ink-soft); white-space:nowrap;
+  }
+  .recap-bar{
+    width:100%; border-radius:6px 6px 3px 3px; background:var(--n0);
+    min-height:4px; transition:height .2s ease;
+  }
+  .recap-bar.r1{ background:var(--n1); }
+  .recap-bar.r2{ background:var(--n2); }
+  .recap-bar.r3{ background:var(--n3); }
+  .recap-bar.r4{ background:var(--n4); }
+  .recap-bar.empty{ background:transparent; border:1px dashed var(--line); }
+  .recap-bar-label{
+    font-size:10.5px; color:var(--ink-soft); text-transform:uppercase;
+    letter-spacing:.03em; font-weight:600;
+  }
+  .recap-section-title{
+    font-size:12px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:700; margin:28px 0 12px;
+  }
+  .recap-highlights{ display:flex; flex-direction:column; gap:10px; }
+  .recap-month-block{ margin-bottom:22px; }
+  .recap-month-block-title{
+    font-size:13px; font-weight:700; margin-bottom:10px; color:var(--ink);
+  }
+  .recap-hcard{ background:var(--item-bg); border-radius:10px; padding:12px 14px; }
+  .recap-hcard + .recap-hcard{ margin-top:8px; }
+  .recap-hcard-head{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .recap-hcard-label{
+    font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft);
+  }
+  .recap-hcard-date{ font-size:13px; font-weight:600; margin-left:auto; }
+  .recap-hcard-badge{
+    font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:12.5px;
+    padding:2px 9px; border-radius:6px; background:var(--n0); color:var(--ink-soft);
+  }
+  .recap-hcard-badge.r1{ background:var(--n1); color:#fff; }
+  .recap-hcard-badge.r2{ background:var(--n2); color:#fff; }
+  .recap-hcard-badge.r3{ background:var(--n3); color:#fff; }
+  .recap-hcard-badge.r4{ background:var(--n4); color:var(--ink); }
+  .recap-hcard-empty{ font-size:13px; color:var(--ink-soft); }
+  .recap-hline{
+    display:flex; align-items:flex-start; gap:7px; font-size:12.5px;
+    color:var(--ink-soft); line-height:1.5; margin-top:4px;
+  }
+  .recap-hline .hdot{
+    width:7px; height:7px; border-radius:50%; margin-top:5px; flex:0 0 auto;
+  }
+  .recap-hline.good .hdot{ background:var(--good); }
+  .recap-hline.bad .hdot{ background:var(--danger); }
+  .recap-empty-note{ font-size:13px; color:var(--ink-soft); }
+  .day-screen-body{
+    flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:20px 20px 8px; max-width:520px; width:100%; margin:0 auto; box-sizing:border-box;
+  }
+  .day-screen-footer{
+    flex:0 0 auto; padding:14px 20px calc(20px + env(safe-area-inset-bottom)); border-top:1px solid var(--line);
+    background:var(--bg); max-width:520px; width:100%; margin:0 auto; box-sizing:border-box;
+  }
+  .date-label{ font-size:13px; color:var(--ink-soft); margin-bottom:2px; font-weight:500;}
+  .date-big{ font-size:22px; font-weight:700; letter-spacing:-0.01em; margin-bottom:18px; }
+  .grade-row{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .grade-input{
+    width:76px; font-size:26px; font-weight:700; letter-spacing:-0.02em;
+    border:1px solid var(--line); border-radius:10px; padding:8px 6px;
+    text-align:center; background:var(--bg); color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .grade-input:focus{ outline:none; border-color:var(--ink); }
+  .grade-info{ display:flex; flex-direction:column; gap:2px; }
+  .grade-label{ font-size:13px; font-weight:600; }
+  .grade-hint{ font-size:11.5px; color:var(--ink-soft); }
+  .grade-dot{
+    width:16px; height:16px; border-radius:50%; margin-left:auto;
+    background:var(--n0); border:1px solid var(--line); flex:0 0 auto;
+    transition:background .15s ease;
+  }
+  .field{ margin-bottom:32px; }
+  .field label{
+    display:flex; align-items:center; gap:8px; font-size:16px;
+    font-weight:700; margin-bottom:10px; color:var(--ink);
+  }
+  .field label .dot{ width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+  .field.good-field label .dot{ background:var(--good); }
+  .field.bad-field label .dot{ background:var(--danger); }
+  .chevron{
+    margin-left:auto; border:none; background:none; color:var(--ink-soft);
+    font-size:11px; cursor:pointer; padding:6px; line-height:1;
+    transform:rotate(0deg); transition:transform .15s ease;
+  }
+  .chevron.collapsed{ transform:rotate(-90deg); }
+  .item-row{ display:flex; gap:8px; margin-bottom:8px; overflow:hidden; }
+  .item-row.hidden{ display:none; }
+  .item-row input{
+    flex:1; border:1px solid var(--line); border-radius:10px;
+    padding:10px 12px; font-family:'Inter',sans-serif; font-size:14px;
+    color:var(--ink); background:var(--bg);
+  }
+  .item-row input:focus{ outline:none; border-color:var(--ink); }
+  .item-add{
+    width:38px; flex:0 0 auto; border:none; border-radius:10px;
+    background:var(--ink); color:#fff; font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  html[data-theme="dark"] .item-add{ background:var(--n3); }
+  .item-edit{
+    width:38px; flex:0 0 auto; border:1px solid var(--line); border-radius:10px;
+    background:var(--bg); color:var(--ink-soft); font-size:15px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .item-edit.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  html[data-theme="dark"] .item-edit.active{ background:var(--n3); border-color:var(--n3); }
+  .item-list{ list-style:none; margin:0; padding:0; }
+  .item-list:empty{ display:none; }
+  .item-list li{
+    display:flex; align-items:center; gap:8px;
+    padding:9px 10px; font-size:14px;
+    background:var(--item-bg); border-radius:8px; margin-bottom:6px;
+  }
+  .item-list li .txt{ flex:1; word-break:break-word; }
+  .item-list li .rm{
+    flex:0 0 auto; border:none; background:transparent; color:var(--ink-soft);
+    font-size:16px; cursor:pointer; padding:0 2px; line-height:1;
+  }
+  .item-list li .rm:active{ color:var(--danger); }
+  .sheet-actions{ display:flex; gap:10px; }
+  .btn{
+    flex:1; border:none; border-radius:10px; padding:13px; font-size:14.5px;
+    font-weight:600; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .btn-primary{ background:var(--ink); color:#fff; }
+  html[data-theme="dark"] .btn-primary{ background:var(--n3); color:#fff; }
+  .btn-ghost{ background:var(--bg); color:var(--ink-soft); border:1px solid var(--line); }
+  .btn-delete{ background:transparent; color:var(--danger); border:1px solid transparent; flex:0 0 auto; padding:13px 14px; }
+
+  .legend{
+    display:flex; align-items:center; gap:6px; margin:22px 20px 6px; max-width:520px;
+    margin-left:auto; margin-right:auto; padding:0 20px;
+    font-size:11px; color:var(--ink-soft);
+  }
+  .legend .sw{ width:11px; height:11px; border-radius:3px; }
+  .loading{ text-align:center; padding:60px 20px; color:var(--ink-soft); font-size:14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="yearrow">
+    <div class="left">
+      <button class="ybtn" id="prevYear">‹</button>
+      <div class="ylabel mono" id="yearLabel">2026</div>
+      <button class="ybtn" id="nextYear">›</button>
+    </div>
+    <div class="right-actions">
+      <button class="theme-toggle" id="recapBtn" title="Recap del año">📊</button>
+      <button class="theme-toggle" id="themeToggle">☀️</button>
+    </div>
+  </div>
+  <div class="dow-row">
+    <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="legend" id="legend" style="display:none">
+  <span class="sw" style="background:var(--n1)"></span><span>1-4</span>
+  <span class="sw" style="background:var(--n2)"></span><span>5-6</span>
+  <span class="sw" style="background:var(--n3)"></span><span>7-8</span>
+  <span class="sw" style="background:var(--n4)"></span><span>9-10</span>
+</div>
+
+<div class="day-screen" id="dayScreen">
+  <div class="day-screen-header">
+    <button class="back-btn" id="backBtn" type="button">‹ Volver</button>
+    <button class="header-delete" id="deleteBtn" type="button">Borrar</button>
+  </div>
+  <div class="day-screen-body" id="dayScreenBody">
+    <div class="date-label mono" id="sheetDow">MARTES</div>
+    <div class="date-big" id="sheetDate">1 de enero</div>
+    <div class="grade-row">
+      <input type="text" inputmode="decimal" id="gradeInput" class="grade-input" placeholder="0,0" maxlength="6">
+      <div class="grade-info">
+        <span class="grade-label">Nota del día</span>
+        <span class="grade-hint">de 0 a 10, ej. 4,5</span>
+      </div>
+      <div class="grade-dot" id="gradeDot"></div>
+    </div>
+    <div class="field good-field">
+      <label>
+        <span class="dot"></span>Cosas buenas
+        <button class="chevron" id="goodChevron" type="button">⌄</button>
+      </label>
+      <div class="item-row" id="goodItemRow">
+        <input type="text" id="goodItemInput" placeholder="Añade algo bueno...">
+        <button class="item-add" id="goodAddBtn" type="button">+</button>
+        <button class="item-edit" id="goodEditBtn" type="button">✎</button>
+      </div>
+      <ul class="item-list good-list" id="goodList"></ul>
+    </div>
+    <div class="field bad-field">
+      <label>
+        <span class="dot"></span>Cosas malas
+        <button class="chevron" id="badChevron" type="button">⌄</button>
+      </label>
+      <div class="item-row" id="badItemRow">
+        <input type="text" id="badItemInput" placeholder="Añade algo malo...">
+        <button class="item-add" id="badAddBtn" type="button">+</button>
+        <button class="item-edit" id="badEditBtn" type="button">✎</button>
+      </div>
+      <ul class="item-list bad-list" id="badList"></ul>
+    </div>
+  </div>
+  <div class="day-screen-footer">
+    <button class="btn btn-primary" id="saveBtn" style="width:100%">Guardar</button>
+  </div>
+</div>
+
+<div class="day-screen" id="recapScreen">
+  <div class="day-screen-header">
+    <button class="back-btn" id="recapBackBtn" type="button">‹ Volver</button>
+    <div class="recap-title mono" id="recapYearLabel">RECAP 2026</div>
+  </div>
+  <div class="day-screen-body" id="recapBody">
+    <div class="recap-year-avg">
+      <span class="recap-year-avg-label">Media del año</span>
+      <span class="recap-year-avg-badge" id="recapYearBadge">–</span>
+    </div>
+    <div class="recap-chart" id="recapChart"></div>
+
+    <div class="recap-section-title">Mejor y peor día del año</div>
+    <div class="recap-highlights" id="recapYearHighlights"></div>
+
+    <div class="recap-section-title">Mejor y peor día de cada mes</div>
+    <div class="recap-month-highlights" id="recapMonthHighlights"></div>
+  </div>
+</div>
+
+<script>
+const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const DOW = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+
+const storage = {
+  async get(key){
+    const v = localStorage.getItem(key);
+    return v === null ? null : { key, value: v };
+  },
+  async set(key, value){
+    localStorage.setItem(key, value);
+    return { key, value };
+  }
+};
+
+let currentYear = new Date().getFullYear();
+let data = {}; // { "2026-01-01": {grade:4.5, good:["...","..."], bad:["...","..."]} }
+let activeDate = null;
+let goodItems = [];
+let badItems = [];
+
+const todayStr = fmt(new Date());
+
+function fmt(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+function gradeTier(g){
+  if(g === null || g === undefined || isNaN(g)) return null;
+  if(g < 5) return 1;
+  if(g < 7) return 2;
+  if(g < 9) return 3;
+  return 4;
+}
+
+function formatGrade(g){
+  return Number.isInteger(g) ? String(g) : String(g).replace('.', ',');
+}
+
+function monthAverage(year, m){
+  const daysInMonth = new Date(year, m+1, 0).getDate();
+  let sum = 0, count = 0;
+  for(let day=1; day<=daysInMonth; day++){
+    const dStr = fmt(new Date(year, m, day));
+    const entry = data[dStr];
+    if(entry && entry.grade !== undefined && entry.grade !== null && !isNaN(entry.grade)){
+      sum += entry.grade;
+      count++;
+    }
+  }
+  if(count === 0) return null;
+  return Math.round((sum / count) * 100000) / 100000;
+}
+
+function yearAverage(year){
+  let sum = 0, count = 0;
+  for(let m=0; m<12; m++){
+    const daysInMonth = new Date(year, m+1, 0).getDate();
+    for(let day=1; day<=daysInMonth; day++){
+      const dStr = fmt(new Date(year, m, day));
+      const entry = data[dStr];
+      if(entry && entry.grade !== undefined && entry.grade !== null && !isNaN(entry.grade)){
+        sum += entry.grade;
+        count++;
+      }
+    }
+  }
+  if(count === 0) return null;
+  return Math.round((sum / count) * 100000) / 100000;
+}
+
+function findExtremeDays(year, month){
+  // month: 0-11 para un mes concreto, o null para todo el año
+  let best = null, worst = null;
+  const months = month === null ? [0,1,2,3,4,5,6,7,8,9,10,11] : [month];
+  months.forEach(m=>{
+    const daysInMonth = new Date(year, m+1, 0).getDate();
+    for(let day=1; day<=daysInMonth; day++){
+      const dStr = fmt(new Date(year, m, day));
+      const entry = data[dStr];
+      if(entry && entry.grade !== undefined && entry.grade !== null && !isNaN(entry.grade)){
+        const item = { date: dStr, grade: entry.grade, good: entry.good || [], bad: entry.bad || [] };
+        if(!best || entry.grade > best.grade) best = item;
+        if(!worst || entry.grade < worst.grade) worst = item;
+      }
+    }
+  });
+  return { best, worst };
+}
+
+function formatDateShort(dStr){
+  const [y, mo, da] = dStr.split('-').map(Number);
+  return parseInt(da,10) + ' ' + MONTHS_SHORT[mo-1].toLowerCase();
+}
+
+function buildHighlightCard(label, item){
+  const card = document.createElement('div');
+  card.className = 'recap-hcard';
+
+  if(!item){
+    const empty = document.createElement('div');
+    empty.className = 'recap-hcard-empty';
+    empty.textContent = 'Sin días calificados';
+    const head = document.createElement('div');
+    head.className = 'recap-hcard-head';
+    const lbl = document.createElement('span');
+    lbl.className = 'recap-hcard-label';
+    lbl.textContent = label;
+    head.appendChild(lbl);
+    card.appendChild(head);
+    card.appendChild(empty);
+    return card;
+  }
+
+  const head = document.createElement('div');
+  head.className = 'recap-hcard-head';
+  const lbl = document.createElement('span');
+  lbl.className = 'recap-hcard-label';
+  lbl.textContent = label;
+  head.appendChild(lbl);
+  const dateEl = document.createElement('span');
+  dateEl.className = 'recap-hcard-date';
+  dateEl.textContent = formatDateShort(item.date);
+  head.appendChild(dateEl);
+  const badge = document.createElement('span');
+  badge.className = 'recap-hcard-badge r' + gradeTier(item.grade);
+  badge.textContent = formatGrade(item.grade);
+  head.appendChild(badge);
+  card.appendChild(head);
+
+  if(item.good && item.good.length){
+    const line = document.createElement('div');
+    line.className = 'recap-hline good';
+    const dot = document.createElement('span');
+    dot.className = 'hdot';
+    line.appendChild(dot);
+    const txt = document.createElement('span');
+    txt.textContent = item.good.join(', ');
+    line.appendChild(txt);
+    card.appendChild(line);
+  }
+  if(item.bad && item.bad.length){
+    const line = document.createElement('div');
+    line.className = 'recap-hline bad';
+    const dot = document.createElement('span');
+    dot.className = 'hdot';
+    line.appendChild(dot);
+    const txt = document.createElement('span');
+    txt.textContent = item.bad.join(', ');
+    line.appendChild(txt);
+    card.appendChild(line);
+  }
+  if((!item.good || !item.good.length) && (!item.bad || !item.bad.length)){
+    const line = document.createElement('div');
+    line.className = 'recap-hcard-empty';
+    line.textContent = 'Sin notas escritas';
+    card.appendChild(line);
+  }
+
+  return card;
+}
+
+function renderRecap(){
+  document.getElementById('recapYearLabel').textContent = 'RECAP ' + currentYear;
+
+  const yAvg = yearAverage(currentYear);
+  const yBadge = document.getElementById('recapYearBadge');
+  if(yAvg !== null){
+    yBadge.className = 'recap-year-avg-badge r' + gradeTier(yAvg);
+    yBadge.textContent = formatGrade(yAvg);
+  }else{
+    yBadge.className = 'recap-year-avg-badge';
+    yBadge.textContent = '–';
+  }
+
+  const chart = document.getElementById('recapChart');
+  chart.innerHTML = '';
+  for(let m=0; m<12; m++){
+    const avg = monthAverage(currentYear, m);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'recap-bar-wrap';
+
+    const value = document.createElement('span');
+    value.className = 'recap-bar-value';
+    value.textContent = avg !== null ? formatGrade(avg) : '–';
+    wrap.appendChild(value);
+
+    const bar = document.createElement('div');
+    if(avg !== null){
+      const pct = Math.max(4, (avg / 10) * 100);
+      bar.className = 'recap-bar r' + gradeTier(avg);
+      bar.style.height = pct + '%';
+    }else{
+      bar.className = 'recap-bar empty';
+      bar.style.height = '4px';
+    }
+    wrap.appendChild(bar);
+
+    const label = document.createElement('span');
+    label.className = 'recap-bar-label mono';
+    label.textContent = MONTHS_SHORT[m];
+    wrap.appendChild(label);
+
+    chart.appendChild(wrap);
+  }
+
+  const yearHighlights = document.getElementById('recapYearHighlights');
+  yearHighlights.innerHTML = '';
+  const yearExtremes = findExtremeDays(currentYear, null);
+  if(!yearExtremes.best && !yearExtremes.worst){
+    const empty = document.createElement('div');
+    empty.className = 'recap-empty-note';
+    empty.textContent = 'Aún no hay ningún día calificado este año.';
+    yearHighlights.appendChild(empty);
+  }else{
+    yearHighlights.appendChild(buildHighlightCard('Mejor día', yearExtremes.best));
+    yearHighlights.appendChild(buildHighlightCard('Peor día', yearExtremes.worst));
+  }
+
+  const monthHighlights = document.getElementById('recapMonthHighlights');
+  monthHighlights.innerHTML = '';
+  let anyMonthData = false;
+  for(let m=0; m<12; m++){
+    const extremes = findExtremeDays(currentYear, m);
+    if(!extremes.best && !extremes.worst) continue;
+    anyMonthData = true;
+
+    const block = document.createElement('div');
+    block.className = 'recap-month-block';
+    const title = document.createElement('div');
+    title.className = 'recap-month-block-title';
+    title.textContent = MONTHS[m];
+    block.appendChild(title);
+    block.appendChild(buildHighlightCard('Mejor día', extremes.best));
+    block.appendChild(buildHighlightCard('Peor día', extremes.worst));
+    monthHighlights.appendChild(block);
+  }
+  if(!anyMonthData){
+    const empty = document.createElement('div');
+    empty.className = 'recap-empty-note';
+    empty.textContent = 'Aún no hay ningún mes con días calificados.';
+    monthHighlights.appendChild(empty);
+  }
+}
+
+function parseGradeInput(raw){
+  const trimmed = (raw || '').trim();
+  if(trimmed === '') return null;
+  const parsed = parseFloat(trimmed.replace(',', '.'));
+  if(isNaN(parsed)) return null;
+  return Math.round(Math.max(0, Math.min(10, parsed)) * 1000) / 1000;
+}
+
+function normalizeItems(val){
+  if(Array.isArray(val)) return val.filter(x=>x && x.trim()).map(x=>x.trim());
+  if(typeof val === 'string' && val.trim()){
+    return val.split('\n').map(x=>x.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+async function loadYear(year){
+  data = {};
+  try{
+    const res = await storage.get('year:'+year, false);
+    if(res && res.value){ data = JSON.parse(res.value); }
+  }catch(e){
+    // no existing data for this year yet, that's fine
+  }
+  render();
+}
+
+async function persist(){
+  try{
+    await storage.set('year:'+currentYear, JSON.stringify(data), false);
+  }catch(e){
+    console.error('No se pudo guardar', e);
+  }
+}
+
+function render(){
+  document.getElementById('yearLabel').textContent = currentYear;
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  for(let m=0; m<12; m++){
+    const monthDiv = document.createElement('div');
+    monthDiv.className = 'month';
+    const h2 = document.createElement('h2');
+    h2.textContent = MONTHS[m];
+    monthDiv.appendChild(h2);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    const firstDay = new Date(currentYear, m, 1);
+    const leadEmpty = (firstDay.getDay() + 6) % 7; // Monday = 0
+    for(let i=0;i<leadEmpty;i++){
+      const e = document.createElement('div');
+      e.className = 'cell empty';
+      grid.appendChild(e);
+    }
+
+    const daysInMonth = new Date(currentYear, m+1, 0).getDate();
+    for(let day=1; day<=daysInMonth; day++){
+      const dateObj = new Date(currentYear, m, day);
+      const dStr = fmt(dateObj);
+      const isFuture = dStr > todayStr;
+      const cell = document.createElement('div');
+      const entry = data[dStr];
+      let cls = 'cell';
+      if(isFuture){ cls += ' future'; }
+      else{
+        const tier = entry ? gradeTier(entry.grade) : null;
+        if(tier){ cls += ' r'+tier; }
+      }
+      if(dStr === todayStr){ cls += ' today'; }
+      cell.className = cls;
+      const num = document.createElement('div');
+      num.className = 'num mono';
+      num.textContent = day;
+      cell.appendChild(num);
+      if(entry && entry.grade !== undefined && entry.grade !== null && !isNaN(entry.grade)){
+        const gradeEl = document.createElement('div');
+        gradeEl.className = 'grade-display';
+        gradeEl.textContent = formatGrade(entry.grade);
+        cell.appendChild(gradeEl);
+      }
+      if(!isFuture){
+        cell.addEventListener('click', ()=> openSheet(dStr));
+      }
+      grid.appendChild(cell);
+    }
+    monthDiv.appendChild(grid);
+
+    const avgRow = document.createElement('div');
+    avgRow.className = 'month-avg';
+    const avgLabel = document.createElement('span');
+    avgLabel.className = 'month-avg-label';
+    avgLabel.textContent = 'Media';
+    avgRow.appendChild(avgLabel);
+
+    const avg = monthAverage(currentYear, m);
+    const avgBadge = document.createElement('span');
+    if(avg !== null){
+      avgBadge.className = 'month-avg-badge r' + gradeTier(avg);
+      avgBadge.textContent = formatGrade(avg);
+    }else{
+      avgBadge.className = 'month-avg-badge';
+      avgBadge.textContent = '–';
+    }
+    avgRow.appendChild(avgBadge);
+    monthDiv.appendChild(avgRow);
+
+    main.appendChild(monthDiv);
+  }
+  document.getElementById('legend').style.display = 'flex';
+}
+
+let editModes = { goodList:false, badList:false };
+
+function openSheet(dStr){
+  activeDate = dStr;
+  const entry = data[dStr] || {};
+
+  const [y,mo,da] = dStr.split('-').map(Number);
+  const dateObj = new Date(y, mo-1, da);
+  document.getElementById('sheetDow').textContent = DOW[dateObj.getDay()];
+  document.getElementById('sheetDate').textContent = da+' de '+MONTHS[mo-1].toLowerCase()+ (y!==currentYear?' '+y:'');
+
+  const gradeInput = document.getElementById('gradeInput');
+  gradeInput.value = (entry.grade !== undefined && entry.grade !== null) ? String(entry.grade).replace('.', ',') : '';
+  goodItems = normalizeItems(entry.good);
+  badItems = normalizeItems(entry.bad);
+  document.getElementById('goodItemInput').value = '';
+  document.getElementById('badItemInput').value = '';
+  editModes.goodList = false;
+  editModes.badList = false;
+  setEditButtonState('goodEditBtn', false);
+  setEditButtonState('badEditBtn', false);
+  renderItemList('goodList', goodItems);
+  renderItemList('badList', badItems);
+  updateGradeDot();
+
+  document.getElementById('deleteBtn').style.visibility = (dStr in data) ? 'visible' : 'hidden';
+  document.getElementById('dayScreenBody').scrollTop = 0;
+  document.getElementById('dayScreen').classList.add('open');
+}
+
+function setEditButtonState(btnId, active){
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('active', active);
+  btn.textContent = active ? '✓' : '✎';
+}
+
+function renderItemList(listId, items){
+  const list = document.getElementById(listId);
+  const editing = editModes[listId];
+  list.innerHTML = '';
+  items.forEach((text, idx)=>{
+    const li = document.createElement('li');
+    const txt = document.createElement('span');
+    txt.className = 'txt';
+    txt.textContent = text;
+    li.appendChild(txt);
+    if(editing){
+      const rm = document.createElement('button');
+      rm.className = 'rm';
+      rm.type = 'button';
+      rm.textContent = '×';
+      rm.addEventListener('click', ()=>{
+        items.splice(idx, 1);
+        renderItemList(listId, items);
+      });
+      li.appendChild(rm);
+    }
+    list.appendChild(li);
+  });
+}
+
+function addItem(inputId, listId, items){
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if(!val) return;
+  items.push(val);
+  input.value = '';
+  renderItemList(listId, items);
+  input.focus();
+}
+
+function toggleEditMode(listId, btnId){
+  editModes[listId] = !editModes[listId];
+  setEditButtonState(btnId, editModes[listId]);
+  renderItemList(listId, listId === 'goodList' ? goodItems : badItems);
+}
+
+document.getElementById('goodEditBtn').addEventListener('click', ()=> toggleEditMode('goodList','goodEditBtn'));
+document.getElementById('badEditBtn').addEventListener('click', ()=> toggleEditMode('badList','badEditBtn'));
+
+document.getElementById('goodAddBtn').addEventListener('click', ()=> addItem('goodItemInput','goodList', goodItems));
+document.getElementById('badAddBtn').addEventListener('click', ()=> addItem('badItemInput','badList', badItems));
+document.getElementById('goodItemInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); addItem('goodItemInput','goodList', goodItems); }
+});
+document.getElementById('badItemInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); addItem('badItemInput','badList', badItems); }
+});
+
+function updateGradeDot(){
+  const dot = document.getElementById('gradeDot');
+  const grade = parseGradeInput(document.getElementById('gradeInput').value);
+  const tier = gradeTier(grade);
+  dot.style.background = tier ? 'var(--n'+tier+')' : 'var(--n0)';
+}
+
+document.getElementById('gradeInput').addEventListener('input', updateGradeDot);
+
+function toggleChevron(chevronId, rowId){
+  const chevron = document.getElementById(chevronId);
+  const row = document.getElementById(rowId);
+  const collapsed = row.classList.toggle('hidden');
+  chevron.classList.toggle('collapsed', collapsed);
+}
+document.getElementById('goodChevron').addEventListener('click', ()=> toggleChevron('goodChevron','goodItemRow'));
+document.getElementById('badChevron').addEventListener('click', ()=> toggleChevron('badChevron','badItemRow'));
+
+function closeSheet(){
+  document.getElementById('dayScreen').classList.remove('open');
+  activeDate = null;
+}
+
+document.getElementById('backBtn').addEventListener('click', closeSheet);
+
+document.getElementById('recapBtn').addEventListener('click', ()=>{
+  renderRecap();
+  document.getElementById('recapBody').scrollTop = 0;
+  document.getElementById('recapScreen').classList.add('open');
+});
+document.getElementById('recapBackBtn').addEventListener('click', ()=>{
+  document.getElementById('recapScreen').classList.remove('open');
+});
+
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+  if(!activeDate) { closeSheet(); return; }
+  const grade = parseGradeInput(document.getElementById('gradeInput').value);
+  // por si quedó algo escrito sin pulsar +
+  addItem('goodItemInput','goodList', goodItems);
+  addItem('badItemInput','badList', badItems);
+
+  if(grade === null && goodItems.length === 0 && badItems.length === 0){
+    delete data[activeDate];
+  }else{
+    data[activeDate] = { grade, good: goodItems.slice(), bad: badItems.slice() };
+  }
+  await persist();
+  playSaveChime();
+  render();
+  closeSheet();
+});
+
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
+  if(!activeDate) return;
+  delete data[activeDate];
+  await persist();
+  render();
+  closeSheet();
+});
+
+document.getElementById('prevYear').addEventListener('click', ()=>{
+  currentYear--; loadYear(currentYear);
+});
+document.getElementById('nextYear').addEventListener('click', ()=>{
+  currentYear++; loadYear(currentYear);
+});
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if(metaTheme) metaTheme.setAttribute('content', theme === 'dark' ? '#0A0A0D' : '#12172B');
+}
+
+async function initTheme(){
+  let theme = 'dark';
+  try{
+    const res = await storage.get('theme', false);
+    if(res && res.value === 'light'){ theme = 'light'; }
+  }catch(e){
+    // sin preferencia guardada todavía, se queda en oscuro
+  }
+  applyTheme(theme);
+}
+
+document.getElementById('themeToggle').addEventListener('click', async ()=>{
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try{
+    await storage.set('theme', next, false);
+  }catch(e){
+    console.error('No se pudo guardar el tema', e);
+  }
+});
+
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    audioCtx = new AC();
+  }
+  if(audioCtx.state === 'suspended'){ audioCtx.resume(); }
+  return audioCtx;
+}
+
+function playSaveChime(){
+  try{
+    const ctx = getAudioCtx();
+    if(!ctx) return;
+    const now = ctx.currentTime;
+    const notes = [392.00, 493.88, 587.33]; // sol-si-re, más grave y suave
+    notes.forEach((freq, i)=>{
+      const start = now + i * 0.14;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.05, start + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.9);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.95);
+    });
+  }catch(e){}
+}
+
+initTheme();
+loadYear(currentYear);
+</script>
+</body>
+</html>
